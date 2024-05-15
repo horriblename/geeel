@@ -33,6 +33,8 @@ pub fn main() !void {
         processInput(window);
 
         // rendering commands here
+        c.glClearColor(0.2, 0.3, 0.3, 1.0);
+        c.glClear(c.GL_COLOR_BUFFER_BIT);
 
         // check and call events and swap the buffers
         c.glfwSwapBuffers(window);
