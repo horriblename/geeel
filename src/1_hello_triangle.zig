@@ -103,6 +103,22 @@ pub fn main() !void {
     c.glDeleteShader(vertexShader);
     c.glDeleteShader(fragShader);
 
+    // Tell OpenGL how to interpret the vertex data
+    // - The position data is stored as f32 values
+    // - The values are tightly packed in the array
+    // - The first value in the data is at the beginning of the buffer
+    c.glVertexAttribPointer(
+        0, // which attribute we want to configure. In vertex.glsl we specified the location of the position vertex attribute with `layout`
+        3, // size of the vertex attribute (vec3 => 3 values)
+        c.GL_FLOAT, // data type of each component (vec3 consists of floating point values)
+        c.GL_FALSE, // normalize? tbh I don't get this xd
+        3 * @sizeOf(f32), // stride: space between consecutive vertex attributes
+        @ptrFromInt(0), // offset of where the position data begins. Since the position data is at the start, we use 0
+    );
+
+    // vertex attributes are disabled by default
+    c.glEnableVertexAttribArray(0);
+
     while (c.glfwWindowShouldClose(window) == 0) {
         // input
         processInput(window);
