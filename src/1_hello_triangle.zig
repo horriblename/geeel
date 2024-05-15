@@ -7,7 +7,10 @@ const c = @cImport({
 const AppError = error{
     CreateWindow,
     InitializeGLAD,
+    CompileShaderFailed,
 };
+
+const vertexShaderSource: [*c]const u8 = @embedFile("vertex.glsl");
 
 pub fn main() !void {
     _ = c.glfwInit();
@@ -49,7 +52,22 @@ pub fn main() !void {
     // - GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times.
     // - GL_STATIC_DRAW: the data is set only once and used many times.
     // - GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
-    c.glBufferData(c.GL_ARRAY_BUFFER, @sizeOf(vertices), vertices, c.GL_STATIC_DRAW);
+    c.glBufferData(c.GL_ARRAY_BUFFER, vertices.len, &vertices, c.GL_STATIC_DRAW);
+
+    // Compile vertex shader
+    const vertexShader = c.glCreateShader(c.GL_VERTEX_SHADER);
+    c.glShaderSource(vertexShader, 1, &vertexShaderSource, null);
+    c.glCompileShader(vertexShader);
+
+    // Check for errors
+    var ok: c_int = 0;
+    var infoLog = std.mem.zeroes([512]u8);
+    c.glGetShaderiv(vertexShader, c.GL_COMPILE_STATUS, &ok);
+    if (ok == 0) {
+        c.glGetShaderInfoLog(vertexShader, 512, null, &infoLog);
+        std.log.err("compiling vertex shader: {any}", .{infoLog});
+        return AppError.CompileShaderFailed;
+    }
 
     while (c.glfwWindowShouldClose(window) == 0) {
         // input
