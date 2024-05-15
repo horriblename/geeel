@@ -28,6 +28,29 @@ pub fn main() !void {
     c.glViewport(0, 0, 800, 600);
     _ = c.glfwSetFramebufferSizeCallback(window, &framebuffer_size_callback);
 
+    // Normalized Device Coordinates(NDC): x, y, z range from -1.0 to 1.0, coordinates outside are clipped
+    //
+    // The NDC coordinates will be transformed to screen-space coordinates via the viewport transform using
+    // data from glViewport
+    const vertices = [_]f32{
+        //x,  y,    z
+        -0.5, -0.5, 0.0,
+        0.5,  -0.5, 0.0,
+        0.0,  0.5,  0.0,
+    };
+
+    var vbo: c_uint = 0;
+    c.glGenBuffers(1, &vbo);
+    c.glBindBuffer(c.GL_ARRAY_BUFFER, vbo);
+
+    // glBufferData is used to copy user-defined data into the currently bound buffer
+    //
+    // The fourth parameter specifies how we want the graphics card to manage the data, one of:
+    // - GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times.
+    // - GL_STATIC_DRAW: the data is set only once and used many times.
+    // - GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
+    c.glBufferData(c.GL_ARRAY_BUFFER, @sizeOf(vertices), vertices, c.GL_STATIC_DRAW);
+
     while (c.glfwWindowShouldClose(window) == 0) {
         // input
         processInput(window);
