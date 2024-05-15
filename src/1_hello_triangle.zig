@@ -83,6 +83,26 @@ pub fn main() !void {
         return AppError.CompileShaderFailed;
     }
 
+    // Link Shader program
+    const shaderProgram = c.glCreateProgram();
+    c.glAttachShader(shaderProgram, vertexShader);
+    c.glAttachShader(shaderProgram, fragShader);
+    c.glLinkProgram(shaderProgram);
+
+    // Check for errors
+    c.glGetShaderiv(vertexShader, c.GL_LINK_STATUS, &ok);
+    if (ok == 0) {
+        c.glGetShaderInfoLog(vertexShader, 512, null, &infoLog);
+        std.log.err("compiling vertex shader: {any}", .{infoLog});
+        return AppError.CompileShaderFailed;
+    }
+
+    // Use Program: every shader and rendering call after glUseProgram will now use this program object
+    c.glUseProgram(shaderProgram);
+
+    c.glDeleteShader(vertexShader);
+    c.glDeleteShader(fragShader);
+
     while (c.glfwWindowShouldClose(window) == 0) {
         // input
         processInput(window);
