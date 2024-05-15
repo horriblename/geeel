@@ -29,6 +29,12 @@ pub fn main() !void {
     _ = c.glfwSetFramebufferSizeCallback(window, &framebuffer_size_callback);
 
     while (c.glfwWindowShouldClose(window) == 0) {
+        // input
+        processInput(window);
+
+        // rendering commands here
+
+        // check and call events and swap the buffers
         c.glfwSwapBuffers(window);
         c.glfwPollEvents();
     }
@@ -39,4 +45,10 @@ pub fn main() !void {
 fn framebuffer_size_callback(window: ?*c.GLFWwindow, width: c_int, height: c_int) callconv(.C) void {
     _ = window;
     c.glViewport(0, 0, width, height);
+}
+
+fn processInput(window: *c.GLFWwindow) void {
+    if (c.glfwGetKey(window, c.GLFW_KEY_ESCAPE) == c.GLFW_PRESS) {
+        c.glfwSetWindowShouldClose(window, 1);
+    }
 }
