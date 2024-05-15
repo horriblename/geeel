@@ -21,3 +21,10 @@ glAttachShader(shaderProgram, vertexShader);
 glAttachShader(shaderProgram, fragmentShader);
 glLinkProgram(shaderProgram);
 ```
+
+# Vertex Attributes
+
+The vertex shader allows us to specify any input we want in the form of vertex attributes and while
+this allows for great flexibility, we have to manually specify what part of our input data goes to
+which vertex attribute in the vertex shader. This means we have to specify **how OpenGL should
+interpret the vertex data** before rendering.
