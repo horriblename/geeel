@@ -61,6 +61,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     one.linkLibrary(glad);
+    one.addIncludePath(.{ .cwd_relative = "glad/include" });
     one.linkSystemLibrary("glfw");
     one.linkSystemLibrary("gl");
     one.linkLibC();
@@ -69,7 +70,10 @@ pub fn build(b: *std.Build) void {
     const run_cmd1 = b.addRunArtifact(one);
     run_cmd1.step.dependOn(b.getInstallStep());
 
-    const run_step1 = b.step("triangle", "Run hello triangle");
+    const build1 = b.step("build-triangle", "Build triangle");
+    build1.dependOn(&one.step);
+
+    const run_step1 = b.step("run-triangle", "Run hello triangle");
     run_step1.dependOn(&run_cmd1.step);
 
     // Creates a step for unit testing. This only builds the test executable
