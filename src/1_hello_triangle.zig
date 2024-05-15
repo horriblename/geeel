@@ -11,6 +11,7 @@ const AppError = error{
 };
 
 const vertexShaderSource: [*c]const u8 = @embedFile("vertex.glsl");
+const fragShaderSource: [*c]const u8 = @embedFile("frag.glsl");
 
 pub fn main() !void {
     _ = c.glfwInit();
@@ -62,6 +63,19 @@ pub fn main() !void {
     // Check for errors
     var ok: c_int = 0;
     var infoLog = std.mem.zeroes([512]u8);
+    c.glGetShaderiv(vertexShader, c.GL_COMPILE_STATUS, &ok);
+    if (ok == 0) {
+        c.glGetShaderInfoLog(vertexShader, 512, null, &infoLog);
+        std.log.err("compiling vertex shader: {any}", .{infoLog});
+        return AppError.CompileShaderFailed;
+    }
+
+    // Compile fragment shader
+    const fragShader = c.glCreateShader(c.GL_FRAGMENT_SHADER);
+    c.glShaderSource(vertexShader, 1, &fragShaderSource, null);
+    c.glCompileShader(fragShader);
+
+    // Check for errors
     c.glGetShaderiv(vertexShader, c.GL_COMPILE_STATUS, &ok);
     if (ok == 0) {
         c.glGetShaderInfoLog(vertexShader, 512, null, &infoLog);
