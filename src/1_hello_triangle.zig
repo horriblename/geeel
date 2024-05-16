@@ -32,23 +32,6 @@ pub fn main() !void {
     c.glViewport(0, 0, 800, 600);
     _ = c.glfwSetFramebufferSizeCallback(window, &framebuffer_size_callback);
 
-    // Normalized Device Coordinates(NDC): x, y, z range from -1.0 to 1.0, coordinates outside are clipped
-    //
-    // The NDC coordinates will be transformed to screen-space coordinates via the viewport transform using
-    // data from glViewport
-    const vertices = [_]f32{
-        //x,  y,    z
-        -0.5, -0.5, 0.0,
-        0.5,  -0.5, 0.0,
-        0.0,  0.5,  0.0,
-    };
-
-    const vbo = val: {
-        var vbo: c_uint = 0;
-        c.glGenBuffers(1, &vbo);
-        break :val vbo;
-    };
-
     // Prepare the Shader Program
     const shaderProgram = shaderProg: {
         // Compile vertex shader
@@ -99,7 +82,25 @@ pub fn main() !void {
         break :shaderProg shaderProgram;
     };
 
-    { // Steps to Draw object
+    // Set up vertex data
+    const vertices = [_]f32{
+        //x,  y,    z
+        -0.5, -0.5, 0.0,
+        0.5,  -0.5, 0.0,
+        0.0,  0.5,  0.0,
+    };
+
+    // vao will store our vertex attribute configuration and which VBO to use.
+    // usually when you have multiple objects to draw, you first generate/configure all the VAOs + the required VBO and
+    // attribute pointers, and store those for later use.
+    var vao: c_uint = 0;
+    var vbo: c_uint = 0;
+    c.glGenVertexArrays(1, &vao);
+    c.glGenBuffers(1, &vbo);
+    c.glBindVertexArray(vao);
+
+    // Initialize VAO and VBO
+    {
         // 0. copy our vertices array in a buffer for OpenGL to use
         // --------------------------------------------------------------------------------
 
@@ -132,25 +133,7 @@ pub fn main() !void {
 
         // vertex attributes are disabled by default
         c.glEnableVertexAttribArray(0);
-
-        // 2. use our shader program when we want to render an object
-        // --------------------------------------------------------------------------------
-
-        // Use Program: every shader and rendering call after glUseProgram will now use this program object
-        c.glUseProgram(shaderProgram);
-
-        // 3. Now draw the object
-        // --------------------------------------------------------------------------------
-        // someOpenGLFunctionThatDrawsOurTriangle();
     }
-
-    // vao will store our vertex attribute configuration and which VBO to use.
-    // usually when you have multiple objects to draw, you first generate/configure all the VAOs + the required VBO and
-    // attribute pointers, and store those for later use.
-    var vao: c_uint = 0;
-    c.glGenVertexArrays(1, &vao);
-    c.glBindBuffer(c.GL_ARRAY_BUFFER, vbo);
-    c.glBufferData(c.GL_ARRAY_BUFFER, vertices.len, &vertices, c.GL_STATIC_DRAW);
 
     while (c.glfwWindowShouldClose(window) == 0) {
         // input
@@ -164,9 +147,7 @@ pub fn main() !void {
         // object and unbind the VAO again.
         c.glUseProgram(shaderProgram);
         c.glBindVertexArray(vao);
-
-        // 4. draw the object
-        // someOpenGLFunctionThatDrawsOurTriangle();
+        c.glDrawArrays(c.GL_TRIANGLES, 0, 3);
 
         // check and call events and swap the buffers
         c.glfwSwapBuffers(window);
