@@ -132,7 +132,13 @@ pub fn main() !void {
         c.glClearColor(0.2, 0.3, 0.3, 1.0);
         c.glClear(c.GL_COLOR_BUFFER_BIT);
 
+        const time = c.glfwGetTime();
+        const greenValue = std.math.sin(time) / 2.0 + 0.5;
+        const vertexColorLocation = c.glGetUniformLocation(shaderProgram, "ourColor");
+
         c.glUseProgram(shaderProgram);
+        c.glUniform4f(vertexColorLocation, 0.0, @floatCast(greenValue), 0.0, 1.0);
+
         c.glBindVertexArray(vao);
         c.glDrawArrays(c.GL_TRIANGLES, 0, 3);
 
