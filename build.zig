@@ -94,30 +94,30 @@ const TriangleBuilder = struct {
     glad: *std.Build.Step.Compile,
 
     fn build(self: TriangleBuilder, b: *std.Build, comptime name: []const u8, path: []const u8) void {
-        const one = b.addExecutable(.{
+        const exe = b.addExecutable(.{
             .name = "hello_triangle",
             .root_source_file = b.path(path),
             .target = self.target,
             .optimize = self.optimize,
         });
-        one.linkLibrary(self.glad);
-        one.addIncludePath(.{ .cwd_relative = "glad/include" });
-        one.linkSystemLibrary("glfw");
+        exe.linkLibrary(self.glad);
+        exe.addIncludePath(.{ .cwd_relative = "glad/include" });
+        exe.linkSystemLibrary("glfw");
         if (self.target.result.os.tag == .macos) {
-            one.linkFramework("OpenGL");
+            exe.linkFramework("OpenGL");
         } else {
-            one.linkSystemLibrary("gl");
+            exe.linkSystemLibrary("gl");
         }
-        one.linkLibC();
-        b.installArtifact(one);
+        exe.linkLibC();
+        b.installArtifact(exe);
 
-        const run_cmd1 = b.addRunArtifact(one);
-        run_cmd1.step.dependOn(b.getInstallStep());
+        const build_step = b.step(name, "Build " ++ name);
+        build_step.dependOn(&exe.step);
 
-        const build1 = b.step(name, "Build " ++ name);
-        build1.dependOn(&one.step);
+        const run_cmd = b.addRunArtifact(exe);
+        run_cmd.step.dependOn(build_step);
 
-        const run_step1 = b.step("run-" ++ name, "Run " ++ name);
-        run_step1.dependOn(&run_cmd1.step);
+        const run_step = b.step("run-" ++ name, "Run " ++ name);
+        run_step.dependOn(&run_cmd.step);
     }
 };
