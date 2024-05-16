@@ -53,28 +53,12 @@ pub fn build(b: *std.Build) void {
     const glad_step = b.step("glad", "build glad");
     glad_step.dependOn(&glad.step);
 
-    // 1. Triangle
-    const one = b.addExecutable(.{
-        .name = "hello_triangle",
-        .root_source_file = b.path("src/1_hello_triangle.zig"),
+    const triangleBuilder = TriangleBuilder{
         .target = target,
         .optimize = optimize,
-    });
-    one.linkLibrary(glad);
-    one.addIncludePath(.{ .cwd_relative = "glad/include" });
-    one.linkSystemLibrary("glfw");
-    one.linkSystemLibrary("gl");
-    one.linkLibC();
-    b.installArtifact(one);
-
-    const run_cmd1 = b.addRunArtifact(one);
-    run_cmd1.step.dependOn(b.getInstallStep());
-
-    const build1 = b.step("build-triangle", "Build triangle");
-    build1.dependOn(&one.step);
-
-    const run_step1 = b.step("run-triangle", "Run hello triangle");
-    run_step1.dependOn(&run_cmd1.step);
+        .glad = glad,
+    };
+    triangleBuilder.build(b, "triangle", "src/1_hello_triangle.zig");
 
     // Creates a step for unit testing. This only builds the test executable
     // but does not run it.
@@ -101,3 +85,37 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_lib_unit_tests.step);
     test_step.dependOn(&run_exe_unit_tests.step);
 }
+
+const TriangleBuilder = struct {
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    glad: *std.Build.Step.Compile,
+
+    fn build(self: TriangleBuilder, b: *std.Build, comptime name: []const u8, path: []const u8) void {
+        const one = b.addExecutable(.{
+            .name = "hello_triangle",
+            .root_source_file = b.path(path),
+            .target = self.target,
+            .optimize = self.optimize,
+        });
+        one.linkLibrary(self.glad);
+        one.addIncludePath(.{ .cwd_relative = "glad/include" });
+        one.linkSystemLibrary("glfw");
+        if (self.target.result.os.tag == .macos) {
+            one.linkFramework("OpenGL");
+        } else{
+            one.linkSystemLibrary("gl");
+        }
+        one.linkLibC();
+        b.installArtifact(one);
+
+        const run_cmd1 = b.addRunArtifact(one);
+        run_cmd1.step.dependOn(b.getInstallStep());
+
+        const build1 = b.step(name, "Build " ++ name);
+        build1.dependOn(&one.step);
+
+        const run_step1 = b.step("run-" ++ name, "Run " ++ name);
+        run_step1.dependOn(&run_cmd1.step);
+    }
+};
