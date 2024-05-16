@@ -112,7 +112,7 @@ pub fn main() !void {
         // - GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times.
         // - GL_STATIC_DRAW: the data is set only once and used many times.
         // - GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
-        c.glBufferData(c.GL_ARRAY_BUFFER, vertices.len, &vertices, c.GL_STATIC_DRAW);
+        c.glBufferData(c.GL_ARRAY_BUFFER, @sizeOf(@TypeOf(vertices)), &vertices, c.GL_STATIC_DRAW);
 
         // 1. set the vertex attributes pointers
         // --------------------------------------------------------------------------------
