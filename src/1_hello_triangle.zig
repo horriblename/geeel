@@ -68,14 +68,14 @@ pub fn main() !void {
 
         // Compile fragment shader
         const fragShader = c.glCreateShader(c.GL_FRAGMENT_SHADER);
-        c.glShaderSource(vertexShader, 1, &fragShaderSource, null);
+        c.glShaderSource(fragShader, 1, &fragShaderSource, null);
         c.glCompileShader(fragShader);
 
         // Check for errors
-        c.glGetShaderiv(vertexShader, c.GL_COMPILE_STATUS, &ok);
+        c.glGetShaderiv(fragShader, c.GL_COMPILE_STATUS, &ok);
         if (ok == 0) {
-            c.glGetShaderInfoLog(vertexShader, 512, null, &infoLog);
-            std.log.err("compiling vertex shader: {any}", .{infoLog});
+            c.glGetShaderInfoLog(fragShader, 512, null, &infoLog);
+            std.log.err("compiling fragment shader: {any}", .{infoLog});
             return AppError.CompileShaderFailed;
         }
 
@@ -86,10 +86,10 @@ pub fn main() !void {
         c.glLinkProgram(shaderProgram);
 
         // Check for errors
-        c.glGetShaderiv(vertexShader, c.GL_LINK_STATUS, &ok);
+        c.glGetProgramiv(shaderProgram, c.GL_LINK_STATUS, &ok);
         if (ok == 0) {
-            c.glGetShaderInfoLog(vertexShader, 512, null, &infoLog);
-            std.log.err("compiling vertex shader: {any}", .{infoLog});
+            c.glGetProgramInfoLog(shaderProgram, 512, null, &infoLog);
+            std.log.err("compiling shader program: {any}", .{infoLog});
             return AppError.CompileShaderFailed;
         }
 
