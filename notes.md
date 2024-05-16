@@ -40,3 +40,43 @@ VAO stores:
 - calls to `glEnableVertexAttribArray` or `glDisableVertexAttribArray`
 - Vertex attribute configurations via glVertexAttribPointer.
 - Vertex buffer objects associated with vertex attributes by calls to glVertexAttribPointer
+
+# Element Buffer Objectss (EBO)
+
+Suppose we want to draw a rectangle instead of a triangle. We can draw a rectangle using two
+triangles - 6 vertices, 2 vertices from each triangle overlap. Instead, we can use an EBO to store
+the unique vertices then specify the order to draw the vertices in.
+
+```c
+// Using VBO to draw 2 triangles:
+float vertices[] = {
+    // first triangle
+    0.5f, 0.5f, 0.0f, // top right
+    0.5f, -0.5f, 0.0f, // bottom right
+    -0.5f, 0.5f, 0.0f, // top left
+    // second triangle
+    0.5f, -0.5f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f, // bottom left
+    -0.5f, 0.5f, 0.0f // top left
+};
+
+// Using EBO to draw 2 triangles:
+float vertices[] = {
+    0.5f, 0.5f, 0.0f, // top right
+    0.5f, -0.5f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f, // bottom left
+    -0.5f, 0.5f, 0.0f // top left
+};
+
+unsigned int indices[] = { // note that we start from 0!
+    0, 1, 3, // first triangle
+    1, 2, 3 // second triangle
+};
+
+// ...
+unsigned int EBO;
+glGenBuffers(1, &EBO);
+
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+```

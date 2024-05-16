@@ -59,6 +59,7 @@ pub fn build(b: *std.Build) void {
         .glad = glad,
     };
     triangleBuilder.build(b, "triangle", "src/1_hello_triangle.zig");
+    triangleBuilder.build(b, "rect", "src/2_hello_rectangle.zig");
 
     // Creates a step for unit testing. This only builds the test executable
     // but does not run it.
@@ -103,7 +104,7 @@ const TriangleBuilder = struct {
         one.linkSystemLibrary("glfw");
         if (self.target.result.os.tag == .macos) {
             one.linkFramework("OpenGL");
-        } else{
+        } else {
             one.linkSystemLibrary("gl");
         }
         one.linkLibC();
