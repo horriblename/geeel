@@ -80,3 +80,16 @@ glGenBuffers(1, &EBO);
 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 ```
+
+# Uniforms
+
+Uniforms are "global" - they are unique per shader program, shared by all stages of shaders
+
+```glsl
+out vec4 FragColor;
+uniform vec4 ourColor;
+
+void main() {
+    FragColor = ourColor;
+}
+```

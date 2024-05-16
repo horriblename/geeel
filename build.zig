@@ -60,6 +60,7 @@ pub fn build(b: *std.Build) void {
     };
     triangleBuilder.build(b, "triangle", "src/1_hello_triangle.zig");
     triangleBuilder.build(b, "rect", "src/2_hello_rectangle.zig");
+    triangleBuilder.build(b, "uniform", "src/3_uniform.zig");
 
     // Creates a step for unit testing. This only builds the test executable
     // but does not run it.
