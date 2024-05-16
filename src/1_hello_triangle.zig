@@ -139,8 +139,6 @@ pub fn main() !void {
         c.glBindVertexArray(0);
     }
 
-    c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
-
     while (c.glfwWindowShouldClose(window) == 0) {
         // input
         processInput(window);
