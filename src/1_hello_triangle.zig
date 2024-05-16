@@ -94,6 +94,59 @@ pub fn main() !void {
     c.glDeleteShader(vertexShader);
     c.glDeleteShader(fragShader);
 
+    { // Steps to Draw object
+        // 0. copy our vertices array in a buffer for OpenGL to use
+        // --------------------------------------------------------------------------------
+
+        c.glBindBuffer(c.GL_ARRAY_BUFFER, vbo);
+
+        // glBufferData is used to copy user-defined data into the currently bound buffer
+        //
+        // The fourth parameter specifies how we want the graphics card to manage the data, one of:
+        // - GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times.
+        // - GL_STATIC_DRAW: the data is set only once and used many times.
+        // - GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
+        c.glBufferData(c.GL_ARRAY_BUFFER, vertices.len, &vertices, c.GL_STATIC_DRAW);
+
+        // 1. set the vertex attributes pointers
+        // --------------------------------------------------------------------------------
+        // Vertex attribute is the input of our vertex shader
+
+        // Tell OpenGL how to interpret the vertex data
+        // - The position data is stored as f32 values
+        // - The values are tightly packed in the array
+        // - The first value in the data is at the beginning of the buffer
+        c.glVertexAttribPointer(
+            0, // which attribute we want to configure. In vertex.glsl we specified the location of the position vertex attribute with `layout`
+            3, // size of the vertex attribute (vec3 => 3 values)
+            c.GL_FLOAT, // data type of each component (vec3 consists of floating point values)
+            c.GL_FALSE, // normalize? tbh I don't get this xd
+            3 * @sizeOf(f32), // stride: space between consecutive vertex attributes
+            @ptrFromInt(0), // offset of where the position data begins. Since the position data is at the start, we use 0
+        );
+
+        // vertex attributes are disabled by default
+        c.glEnableVertexAttribArray(0);
+
+        // 2. use our shader program when we want to render an object
+        // --------------------------------------------------------------------------------
+
+        // Use Program: every shader and rendering call after glUseProgram will now use this program object
+        c.glUseProgram(shaderProgram);
+
+        // 3. Now draw the object
+        // --------------------------------------------------------------------------------
+        // someOpenGLFunctionThatDrawsOurTriangle();
+    }
+
+    // vao will store our vertex attribute configuration and which VBO to use.
+    // usually when you have multiple objects to draw, you first generate/configure all the VAOs + the required VBO and
+    // attribute pointers, and store those for later use.
+    var vao: c_uint = 0;
+    c.glGenVertexArrays(1, &vao);
+    c.glBindBuffer(c.GL_ARRAY_BUFFER, vbo);
+    c.glBufferData(c.GL_ARRAY_BUFFER, vertices.len, &vertices, c.GL_STATIC_DRAW);
+
     while (c.glfwWindowShouldClose(window) == 0) {
         // input
         processInput(window);
@@ -102,49 +155,13 @@ pub fn main() !void {
         c.glClearColor(0.2, 0.3, 0.3, 1.0);
         c.glClear(c.GL_COLOR_BUFFER_BIT);
 
-        { // Draw object
-            // 0. copy our vertices array in a buffer for OpenGL to use
-            // --------------------------------------------------------------------------------
+        // when we want to draw our objects, we take the corresponding VAO, bind it, then draw the
+        // object and unbind the VAO again.
+        c.glUseProgram(shaderProgram);
+        c.glBindVertexArray(vao);
 
-            c.glBindBuffer(c.GL_ARRAY_BUFFER, vbo);
-
-            // glBufferData is used to copy user-defined data into the currently bound buffer
-            //
-            // The fourth parameter specifies how we want the graphics card to manage the data, one of:
-            // - GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times.
-            // - GL_STATIC_DRAW: the data is set only once and used many times.
-            // - GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
-            c.glBufferData(c.GL_ARRAY_BUFFER, vertices.len, &vertices, c.GL_STATIC_DRAW);
-
-            // 1. set the vertex attributes pointers
-            // --------------------------------------------------------------------------------
-
-            // Tell OpenGL how to interpret the vertex data
-            // - The position data is stored as f32 values
-            // - The values are tightly packed in the array
-            // - The first value in the data is at the beginning of the buffer
-            c.glVertexAttribPointer(
-                0, // which attribute we want to configure. In vertex.glsl we specified the location of the position vertex attribute with `layout`
-                3, // size of the vertex attribute (vec3 => 3 values)
-                c.GL_FLOAT, // data type of each component (vec3 consists of floating point values)
-                c.GL_FALSE, // normalize? tbh I don't get this xd
-                3 * @sizeOf(f32), // stride: space between consecutive vertex attributes
-                @ptrFromInt(0), // offset of where the position data begins. Since the position data is at the start, we use 0
-            );
-
-            // vertex attributes are disabled by default
-            c.glEnableVertexAttribArray(0);
-
-            // 2. use our shader program when we want to render an object
-            // --------------------------------------------------------------------------------
-
-            // Use Program: every shader and rendering call after glUseProgram will now use this program object
-            c.glUseProgram(shaderProgram);
-
-            // 3. Now draw the object
-            // --------------------------------------------------------------------------------
-            // someOpenGLFunctionThatDrawsOurTriangle();
-        }
+        // 4. draw the object
+        // someOpenGLFunctionThatDrawsOurTriangle();
 
         // check and call events and swap the buffers
         c.glfwSwapBuffers(window);

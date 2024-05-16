@@ -28,3 +28,15 @@ The vertex shader allows us to specify any input we want in the form of vertex a
 this allows for great flexibility, we have to manually specify what part of our input data goes to
 which vertex attribute in the vertex shader. This means we have to specify **how OpenGL should
 interpret the vertex data** before rendering.
+
+# Vertex Array Object (VAO)
+
+VAO can be bound just like a VBO.
+
+> Core OpenGL requires VAO so it knows what to do with our vertex inputs
+
+VAO stores:
+
+- calls to `glEnableVertexAttribArray` or `glDisableVertexAttribArray`
+- Vertex attribute configurations via glVertexAttribPointer.
+- Vertex buffer objects associated with vertex attributes by calls to glVertexAttribPointer
