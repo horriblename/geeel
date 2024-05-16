@@ -133,7 +133,13 @@ pub fn main() !void {
 
         // vertex attributes are disabled by default
         c.glEnableVertexAttribArray(0);
+
+        // just showing you can unbind vao/vbo
+        c.glBindBuffer(c.GL_ARRAY_BUFFER, 0);
+        c.glBindVertexArray(0);
     }
+
+    c.glPolygonMode(c.GL_FRONT_AND_BACK, c.GL_LINE);
 
     while (c.glfwWindowShouldClose(window) == 0) {
         // input
