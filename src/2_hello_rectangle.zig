@@ -3,6 +3,7 @@ const c = @cImport({
     @cInclude("glad/glad.h");
     @cInclude("GLFW/glfw3.h");
 });
+const Shader = @import("Shader.zig");
 
 const AppError = error{
     CreateWindow,
@@ -12,6 +13,8 @@ const AppError = error{
 
 const vertexShaderSource: [*c]const u8 = @embedFile("vertex.glsl");
 const fragShaderSource: [*c]const u8 = @embedFile("frag.glsl");
+const vertexShaderFile = "src/vertex.glsl";
+const fragShaderFile = "src/frag.glsl";
 
 pub fn main() !void {
     _ = c.glfwInit();
@@ -33,54 +36,7 @@ pub fn main() !void {
     _ = c.glfwSetFramebufferSizeCallback(window, &framebuffer_size_callback);
 
     // Prepare the Shader Program
-    const shaderProgram = shaderProg: {
-        // Compile vertex shader
-        const vertexShader = c.glCreateShader(c.GL_VERTEX_SHADER);
-        c.glShaderSource(vertexShader, 1, &vertexShaderSource, null);
-        c.glCompileShader(vertexShader);
-
-        // Check for errors
-        var ok: c_int = 0;
-        var infoLog = std.mem.zeroes([512]u8);
-        c.glGetShaderiv(vertexShader, c.GL_COMPILE_STATUS, &ok);
-        if (ok == 0) {
-            c.glGetShaderInfoLog(vertexShader, 512, null, &infoLog);
-            std.log.err("compiling vertex shader: {any}", .{infoLog});
-            return AppError.CompileShaderFailed;
-        }
-
-        // Compile fragment shader
-        const fragShader = c.glCreateShader(c.GL_FRAGMENT_SHADER);
-        c.glShaderSource(fragShader, 1, &fragShaderSource, null);
-        c.glCompileShader(fragShader);
-
-        // Check for errors
-        c.glGetShaderiv(fragShader, c.GL_COMPILE_STATUS, &ok);
-        if (ok == 0) {
-            c.glGetShaderInfoLog(fragShader, 512, null, &infoLog);
-            std.log.err("compiling fragment shader: {any}", .{infoLog});
-            return AppError.CompileShaderFailed;
-        }
-
-        // Link Shader program
-        const shaderProgram = c.glCreateProgram();
-        c.glAttachShader(shaderProgram, vertexShader);
-        c.glAttachShader(shaderProgram, fragShader);
-        c.glLinkProgram(shaderProgram);
-
-        // Check for errors
-        c.glGetProgramiv(shaderProgram, c.GL_LINK_STATUS, &ok);
-        if (ok == 0) {
-            c.glGetProgramInfoLog(shaderProgram, 512, null, &infoLog);
-            std.log.err("compiling shader program: {any}", .{infoLog});
-            return AppError.CompileShaderFailed;
-        }
-
-        c.glDeleteShader(vertexShader);
-        c.glDeleteShader(fragShader);
-
-        break :shaderProg shaderProgram;
-    };
+    const shader = try Shader.fromFile(vertexShaderFile, fragShaderFile);
 
     // Set up vertex data
     const vertices = [_]f32{
@@ -135,7 +91,7 @@ pub fn main() !void {
         c.glClearColor(0.2, 0.3, 0.3, 1.0);
         c.glClear(c.GL_COLOR_BUFFER_BIT);
 
-        c.glUseProgram(shaderProgram);
+        shader.use();
         c.glBindVertexArray(vao);
         c.glDrawElements(c.GL_TRIANGLES, 6, c.GL_UNSIGNED_INT, @ptrFromInt(0));
 
