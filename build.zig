@@ -53,11 +53,8 @@ pub fn build(b: *std.Build) void {
     const glad_step = b.step("glad", "build glad");
     glad_step.dependOn(&glad.step);
 
-    const triangleBuilder = TriangleBuilder{
-        .target = target,
-        .optimize = optimize,
-        .glad = glad,
-    };
+    const triangleBuilder = TriangleBuilder.init(b, target, optimize, glad);
+
     triangleBuilder.build(b, "triangle", "src/1_hello_triangle.zig");
     triangleBuilder.build(b, "rect", "src/2_hello_rectangle.zig");
     triangleBuilder.build(b, "uniform", "src/3_uniform.zig");
@@ -93,6 +90,22 @@ const TriangleBuilder = struct {
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
     glad: *std.Build.Step.Compile,
+    all: *std.Build.Step,
+
+    fn init(
+        b: *std.Build,
+        target: std.Build.ResolvedTarget,
+        optimize: std.builtin.OptimizeMode,
+        glad: *std.Build.Step.Compile,
+    ) TriangleBuilder {
+        const all = b.step("all", "Build everything");
+        return .{
+            .target = target,
+            .optimize = optimize,
+            .glad = glad,
+            .all = all,
+        };
+    }
 
     fn build(self: TriangleBuilder, b: *std.Build, comptime name: []const u8, path: []const u8) void {
         const exe = b.addExecutable(.{
@@ -120,5 +133,7 @@ const TriangleBuilder = struct {
 
         const run_step = b.step("run-" ++ name, "Run " ++ name);
         run_step.dependOn(&run_cmd.step);
+
+        self.all.dependOn(build_step);
     }
 };
